@@ -27,6 +27,7 @@ class _BottomNavViewState extends State<BottomNavView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.creamWhite,
       extendBody: true,
       body: SafeArea(
         child: widgets[currentIndex],
