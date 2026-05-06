@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:memo/core/app_colors.dart';
 import 'package:memo/core/utlis/app_router.dart';
 
 
@@ -12,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+     
       debugShowCheckedModeBanner: false,
       routerConfig: AppRouter.router,
     );
