@@ -57,11 +57,6 @@ class _HomeViewBodyState extends State<HomeViewBody> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    return const Column(children: [Text("home")]);
-  }
-}
-=======
     final bg = _isDark ? AppColors.darkBg : AppColors.creamWhite;
 
     return Scaffold(
@@ -612,4 +607,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
->>>>>>> 8d0ee0a782b1b3ab1ba8320d08258f17edbffc39
