@@ -1,19 +1,19 @@
 part of 'add_memory_cubit.dart';
 
-@immutable
-sealed class AddMemoryState {}
+abstract class AddMemoryState {}
 
-final class AddMemoryInitial extends AddMemoryState {}
+class AddMemoryInitial extends AddMemoryState {}
 
-final class AddMemoryLoading extends AddMemoryState {}
+class AddMemoryLoading extends AddMemoryState {}
 
-final class AddMemorySuccess extends AddMemoryState {}
+class AddMemorySuccess extends AddMemoryState {}
 
-final class AddMemoryFailure extends AddMemoryState {
-
+class AddMemoryFailure extends AddMemoryState {
   final String errorMessage;
 
   AddMemoryFailure({
     required this.errorMessage,
   });
 }
+
+class AddMemoryTagsUpdated extends AddMemoryState {}
