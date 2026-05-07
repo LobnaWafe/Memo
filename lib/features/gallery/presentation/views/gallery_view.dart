@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:memo/features/gallery/presentation/widgets/gallery_view_body.dart';
+import 'package:memory_journal/features/gallery/gallery_view_body.dart';
 
-class GalleryView extends StatelessWidget {
-  const GalleryView({super.key});
+class GalleryScreen extends StatelessWidget {
+  GalleryScreen({super.key});
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: GalleryViewBody()),
+      //: const Color(0xffFAF7F2),
+
+      // AppBar فوق
+      appBar: AppBar(
+        title: const Text('Gallery'),
+        centerTitle: true,
+      ),
+
+      // الجاليري
+      body: GalleryViewBody()
     );
   }
 }
