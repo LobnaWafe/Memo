@@ -36,7 +36,7 @@ abstract class AppRouter {
       ),
       GoRoute(
         path: kGalleryView,
-        builder: (context, state) => GalleryView(),
+        builder: (context, state) => GalleryScreen(),
       ),
       GoRoute(
         path: kInsightsView,

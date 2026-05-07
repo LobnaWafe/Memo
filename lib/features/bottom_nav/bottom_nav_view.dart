@@ -20,7 +20,7 @@ class _BottomNavViewState extends State<BottomNavView> {
     HomeView(),
     CalenderView(),
     AddMemoryView(),
-    GalleryView(),
+    GalleryScreen(),
     InsightsView(),
   ];
 
