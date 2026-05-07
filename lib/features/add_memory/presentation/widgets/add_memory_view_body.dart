@@ -110,9 +110,6 @@ class _AddMemoryViewBodyState extends State<AddMemoryViewBody> {
             ),
           ),
 
-        
-
-          
           const SizedBox(height: 30),
         ],
       ),
