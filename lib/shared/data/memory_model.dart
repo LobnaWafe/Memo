@@ -35,4 +35,24 @@ class MemoryModel extends HiveObject {
     this.tags, 
     required this.isFav,
   });
+  MemoryModel copyWith({
+  String? id,
+  String? feelingName,
+  String? description,
+  DateTime? time,
+  String? imagePath,
+  List<String>? tags,
+  bool? isFav,
+}) {
+  return MemoryModel(
+    id: id ?? this.id,
+    feelingName: feelingName ?? this.feelingName,
+    description: description ?? this.description,
+    time: time ?? this.time,
+    imagePath: imagePath ?? this.imagePath,
+    tags: tags ?? this.tags,
+    isFav: isFav ?? this.isFav,
+  );
+}
+
 }

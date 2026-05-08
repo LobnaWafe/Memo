@@ -1,74 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:memo/core/app_colors.dart';
-import 'package:memo/models/memory.dart';
+import 'package:memo/core/utlis/app_router.dart';
+import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart';
+import 'package:memo/features/home/presentation/widgets/empty_state.dart';
+import 'package:memo/features/home/presentation/widgets/memory_card.dart';
+import 'package:memo/features/home/presentation/widgets/memory_card_shimmer.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
-// ─── Dummy Models ────────────────────────────────────────────────
-
-// ─── Dummy Data ──────────────────────────────────────────────────
-final _dummyMemories = [
-  Memory(
-    id: '1',
-    title: 'Morning walk in the park',
-    content: 'The air was fresh and birds were singing...',
-    date: DateTime(2025, 5, 7),
-    emoji: '🌿',
-    isFavorite: true,
-  ),
-  Memory(
-    id: '2',
-    title: 'Coffee with an old friend',
-    content: 'We talked for hours about old times...',
-    date: DateTime(2025, 5, 5),
-    emoji: '☕',
-  ),
-  Memory(
-    id: '3',
-    title: 'Finished my book',
-    content: 'What an ending! Totally unexpected twist...',
-    date: DateTime(2025, 4, 28),
-    emoji: '📚',
-    isFavorite: true,
-  ),
-  Memory(
-    id: '4',
-    title: 'Rainy afternoon',
-    content: 'Stayed home, watched movies all day long...',
-    date: DateTime(2025, 4, 20),
-    emoji: '🌧️',
-  ),
-];
-
-final _onThisDayMemories = [_dummyMemories[0], _dummyMemories[2]];
-
-// ─── App Colors ──────────────────────────────────────────────────
-// ─── Home Screen ─────────────────────────────────────────────────
-class HomeViewBody extends StatefulWidget {
-  const HomeViewBody({super.key});
-
-  @override
-  State<HomeViewBody> createState() => _HomeViewBodyState();
-}
-
-class _HomeViewBodyState extends State<HomeViewBody> {
-  bool _isDark = false;
-
-  void _toggleTheme() => setState(() => _isDark = !_isDark);
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bg = _isDark ? AppColors.darkBg : AppColors.creamWhite;
+    return BlocProvider(
+      create: (_) => HomeCubit()..getMemories(),
+      child: const _HomeView(),
+    );
+  }
+}
+
+class _HomeView extends StatelessWidget {
+  const _HomeView();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.creamWhite,
       body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
         slivers: [
-          _HomeAppBar(isDark: _isDark, onToggleTheme: _toggleTheme),
-          _OnThisDayBanner(isDark: _isDark),
+          _HomeAppBar(isDark: isDark),
+          const _OnThisDayBanner(),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-            sliver: _MemoriesList(isDark: _isDark),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                // ── Loading ──
+                if (state is HomeInitial || state is HomeLoading) {
+                  return const SliverToBoxAdapter(child: MemoryCardShimmer());
+                }
+
+                // ── Error ──
+                if (state is HomeError) {
+                  return SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Text('Something went wrong: ${state.message}'),
+                      ),
+                    ),
+                  );
+                }
+
+                // ── Success ──
+                if (state is HomeSuccess) {
+                  final memories = state.memories;
+
+                  // Empty
+                  if (memories.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: EmptyState(
+                        emoji: '📓',
+                        title: 'Your journal awaits',
+                        subtitle:
+                            'Start capturing your memories, thoughts, and moments.',
+                        actionLabel: 'Add First Memory',
+                        onAction: () => context.push('/add-memory'),
+                      ),
+                    );
+                  }
+
+                  // Group by month
+                  final grouped = <String, List<MemoryModel>>{};
+                  for (final m in memories) {
+                    final key = DateFormat('MMMM yyyy').format(m.time);
+                    grouped.putIfAbsent(key, () => []).add(m);
+                  }
+
+                  final entries = grouped.entries.toList();
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final entries = grouped.entries.toList();
+                      if (index >= entries.length) return null;
+
+                      final entry = entries[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16, top: 8),
+                            child: Text(
+                              entry.key,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                          ...entry.value.map((m) => MemoryCard(memory: m)),
+                        ],
+                      );
+                    }, childCount: grouped.length),
+                  );
+                }
+
+                return const SliverToBoxAdapter(child: SizedBox());
+              },
+            ),
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
         ],
@@ -77,12 +121,94 @@ class _HomeViewBodyState extends State<HomeViewBody> {
   }
 }
 
-// ─── App Bar ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────
+// App Bar
+// ─────────────────────────────────────────────────────
+
 class _HomeAppBar extends StatelessWidget {
   final bool isDark;
-  final VoidCallback onToggleTheme;
 
-  const _HomeAppBar({required this.isDark, required this.onToggleTheme});
+  const _HomeAppBar({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final greeting = _getGreeting();
+    return SliverAppBar(
+      expandedHeight: 140,
+      floating: true,
+      pinned: true,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.creamWhite,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      elevation: 0,
+      //forceMaterialTransparency: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          padding: const EdgeInsets.fromLTRB(20, 56, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greeting,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+              Text(
+                'Your Journal',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                DateFormat('EEEE, MMMM d').format(now),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textHint),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        // ── Dark / Light toggle ──
+        Builder(
+          builder: (context) => IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
+            onPressed: () {},
+          ),
+        ),
+
+        // ── Search ──
+        IconButton(
+          icon: Icon(
+            Icons.search_rounded,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+          ),
+          onPressed: () => context.push('/search'),
+        ),
+
+        // ── Favorites ──
+        IconButton(
+          icon: Icon(
+            Icons.favorite_border_rounded,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+          ),
+          onPressed: () => context.push(AppRouter.kFavoriteView), // ← go_router
+        ),
+
+        const SizedBox(width: 4),
+      ],
+    );
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -90,520 +216,82 @@ class _HomeAppBar extends StatelessWidget {
     if (hour < 17) return 'Good afternoon 🌤️';
     return 'Good evening 🌙';
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final textColor = isDark ? AppColors.darkText : AppColors.ink;
-    final bgColor = isDark ? AppColors.darkBg : AppColors.creamWhite;
-
-    return SliverAppBar(
-      expandedHeight: 148, // ← fixed height — enough room, no overflow
-      floating: false,
-      pinned: true,
-      backgroundColor: bgColor,
-      surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.transparent,
-      elevation: 0,
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.pin,
-        background: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min, // ← prevents overflow
-              children: [
-                // Greeting chip
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.amber.withOpacity(0.15)
-                        : AppColors.amberGlow,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.amber.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    _getGreeting(),
-                    style: TextStyle(
-                      color: isDark ? AppColors.amber : AppColors.inkLight,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Title
-                Text(
-                  'Your Journal',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.8,
-                    height: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                // Date
-                Text(
-                  DateFormat('EEEE, MMMM d').format(now),
-                  style: TextStyle(
-                    color: isDark ? AppColors.darkMist : AppColors.mist,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        _AppBarAction(
-          icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          isDark: isDark,
-          onTap: onToggleTheme,
-        ),
-        _AppBarAction(icon: Icons.search_rounded, isDark: isDark, onTap: () {}),
-        _AppBarAction(
-          icon: Icons.favorite_border_rounded,
-          isDark: isDark,
-          onTap: () {},
-        ),
-        const SizedBox(width: 6),
-      ],
-    );
-  }
 }
 
-class _AppBarAction extends StatelessWidget {
-  final IconData icon;
-  final bool isDark;
-  final VoidCallback onTap;
+// ─────────────────────────────────────────────────────
+// On This Day Banner
+// ─────────────────────────────────────────────────────
 
-  const _AppBarAction({
-    required this.icon,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        margin: const EdgeInsets.only(right: 4, top: 8, bottom: 8),
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.07)
-              : Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isDark ? AppColors.darkText : AppColors.ink,
-        ),
-      ),
-    );
-  }
-}
-
-// ─── On This Day Banner ──────────────────────────────────────────
 class _OnThisDayBanner extends StatelessWidget {
-  final bool isDark;
-  const _OnThisDayBanner({required this.isDark});
+  const _OnThisDayBanner();
 
   @override
   Widget build(BuildContext context) {
-    final memories = _onThisDayMemories;
-    if (memories.isEmpty) return const SliverToBoxAdapter(child: SizedBox());
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        if (state is! HomeSuccess) {
+          return const SliverToBoxAdapter(child: SizedBox());
+        }
 
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 6, 20, 16),
-        child: GestureDetector(
-          onTap: () {},
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCard : AppColors.warmWhite,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isDark
-                    ? AppColors.amber.withOpacity(0.25)
-                    : AppColors.amber.withOpacity(0.35),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.amber.withOpacity(isDark ? 0.08 : 0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                // Icon with glow
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.amber.withOpacity(0.15)
-                        : AppColors.amberLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Text('✨', style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'On This Day',
-                        style: TextStyle(
-                          color: isDark ? AppColors.darkText : AppColors.ink,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${memories.length} memor${memories.length == 1 ? 'y' : 'ies'} from the past',
-                        style: TextStyle(
-                          color: isDark ? AppColors.darkMist : AppColors.mist,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.06)
-                        : AppColors.fog.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: isDark ? AppColors.darkMist : AppColors.mist,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+        final today = DateTime.now();
 
-// ─── Memories List ───────────────────────────────────────────────
-class _MemoriesList extends StatelessWidget {
-  final bool isDark;
-  const _MemoriesList({required this.isDark});
+        // ذكريات نفس اليوم والشهر بس سنة مختلفة
+        final onThisDay = state.memories.where((m) {
+          return m.time.day == today.day &&
+              m.time.month == today.month &&
+              m.time.year != today.year;
+        }).toList();
 
-  @override
-  Widget build(BuildContext context) {
-    final memories = _dummyMemories;
-
-    if (memories.isEmpty) {
-      return SliverToBoxAdapter(child: _EmptyState(onAction: () {}));
-    }
-
-    // Group by month
-    final grouped = <String, List<Memory>>{};
-    for (final m in memories) {
-      final key = DateFormat('MMMM yyyy').format(m.date);
-      grouped.putIfAbsent(key, () => []).add(m);
-    }
-
-    final entries = grouped.entries.toList();
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        if (index >= entries.length) return null;
-        final entry = entries[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _MonthHeader(label: entry.key, isDark: isDark),
-            ...entry.value.map((m) => _MemoryCard(memory: m, isDark: isDark)),
-            const SizedBox(height: 8),
-          ],
-        );
-      }, childCount: grouped.length),
-    );
-  }
-}
-
-// ─── Month Header ────────────────────────────────────────────────
-class _MonthHeader extends StatelessWidget {
-  final String label;
-  final bool isDark;
-  const _MonthHeader({required this.label, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 12),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: isDark ? AppColors.darkMist : AppColors.mist,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
+        if (onThisDay.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox());
+        }
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: Container(
-              height: 1,
-              color: isDark
-                  ? Colors.white.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.06),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Memory Card ─────────────────────────────────────────────────
-class _MemoryCard extends StatelessWidget {
-  final Memory memory;
-  final bool isDark;
-
-  const _MemoryCard({required this.memory, required this.isDark});
-
-  // Pick a soft accent per emoji category
-  Color _accentColor() {
-    switch (memory.emoji) {
-      case '🌿':
-      case '🌱':
-        return AppColors.sage;
-      case '☕':
-      case '🍵':
-        return AppColors.dustyRose;
-      case '📚':
-      case '📖':
-        return AppColors.sky;
-      case '🌧️':
-        return AppColors.sky;
-      default:
-        return AppColors.fog;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = _accentColor();
-    final cardBg = isDark ? AppColors.darkCard : AppColors.warmWhite;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(18),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.05),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 3),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.lavender, AppColors.softPurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Emoji badge
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? accent.withOpacity(0.18)
-                        : accent.withOpacity(0.35),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: Center(
-                    child: Text(
-                      memory.emoji,
-                      style: const TextStyle(fontSize: 22),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Text('✨', style: TextStyle(fontSize: 24)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'On This Day',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        Text(
+                          '${state.memories.length} memor${state.memories.length == 1 ? 'y' : 'ies'} from the past',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              memory.title,
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppColors.darkText
-                                    : AppColors.ink,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                letterSpacing: -0.2,
-                                height: 1.2,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (memory.isFavorite) ...[
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.favorite_rounded,
-                              size: 14,
-                              color: AppColors.amber,
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        memory.content,
-                        style: TextStyle(
-                          color: isDark ? AppColors.darkMist : AppColors.mist,
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      // Date pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.06)
-                              : Colors.black.withOpacity(0.04),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          DateFormat('MMM d, yyyy').format(memory.date),
-                          style: TextStyle(
-                            color: isDark ? AppColors.darkMist : AppColors.mist,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary,
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Empty State ─────────────────────────────────────────────────
-class _EmptyState extends StatelessWidget {
-  final VoidCallback onAction;
-  const _EmptyState({required this.onAction});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('📓', style: TextStyle(fontSize: 52)),
-          const SizedBox(height: 20),
-          const Text(
-            'Your journal awaits',
-            style: TextStyle(
-              color: AppColors.ink,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Start capturing your memories,\nthoughts, and moments.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.mist, fontSize: 14, height: 1.5),
-          ),
-          const SizedBox(height: 28),
-          GestureDetector(
-            onTap: onAction,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 13),
-              decoration: BoxDecoration(
-                color: AppColors.ink,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Text(
-                'Add First Memory',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  letterSpacing: 0.1,
-                ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

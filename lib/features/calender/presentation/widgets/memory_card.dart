@@ -1,42 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:memo/core/app_colors.dart';
-import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class MemoryCard extends StatelessWidget {
-  final Memory memory;
+  final MemoryModel memory;
   final bool isDark;
 
   const MemoryCard({super.key, required this.memory, required this.isDark});
 
   Color _accentColor() {
-    switch (memory.emoji) {
-      case '🌿':
-      case '🌱':
-      case '🍃':
-        return AppColors.sage;
-      case '☕':
-      case '🍵':
-      case '🫖':
-        return AppColors.dustyRose;
-      case '📚':
-      case '📖':
-      case '🎵':
-        return AppColors.sky;
-      case '🌅':
-      case '☀️':
+    switch (memory.feelingName.toLowerCase()) {
+      case 'happy':
+      case 'excited':
         return AppColors.sunflower;
-      case '🍽️':
-      case '🍕':
-      case '🍜':
+      case 'calm':
+      case 'peaceful':
+        return AppColors.sage;
+      case 'sad':
+      case 'lonely':
+        return AppColors.sky;
+      case 'anxious':
+      case 'stressed':
+        return AppColors.dustyRose;
+      case 'grateful':
+      case 'love':
         return AppColors.peach;
       default:
         return AppColors.fog;
     }
   }
 
+  String _feelingEmoji() {
+    switch (memory.feelingName.toLowerCase()) {
+      case 'Happy':
+        return '😊';
+      case 'Sad':
+        return '😢';
+      case 'Calm':
+        return '😌';
+      case 'Angry':
+        return '😠';
+      case 'Excited':
+        return '🥳';
+      case 'Anxious':
+        return '😰';
+      case 'Grateful':
+        return '💪';
+      case 'Productive':
+        return '🙏';
+      case 'Tired':
+        return '😴';
+      case 'Loved':
+        return '🥰';
+      default:
+        return '📝';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = _accentColor();
+    final emoji = _feelingEmoji();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -67,6 +91,7 @@ class MemoryCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Emoji Container ──
                 Container(
                   width: 44,
                   height: 44,
@@ -77,13 +102,12 @@ class MemoryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: Center(
-                    child: Text(
-                      memory.emoji,
-                      style: const TextStyle(fontSize: 21),
-                    ),
+                    child: Text(emoji, style: const TextStyle(fontSize: 21)),
                   ),
                 ),
                 const SizedBox(width: 12),
+
+                // ── Content ──
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +117,7 @@ class MemoryCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              memory.title,
+                              memory.feelingName,
                               style: TextStyle(
                                 color: isDark
                                     ? AppColors.darkText
@@ -106,7 +130,7 @@ class MemoryCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (memory.isFavorite)
+                          if (memory.isFav)
                             const Icon(
                               Icons.favorite_rounded,
                               size: 13,
@@ -116,7 +140,7 @@ class MemoryCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        memory.content,
+                        memory.description,
                         style: TextStyle(
                           color: isDark ? AppColors.darkMist : AppColors.mist,
                           fontSize: 12.5,

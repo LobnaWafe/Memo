@@ -10,3 +10,29 @@ final moods = [
     {'emoji': '😴', 'label': 'Tired'},
     {'emoji': '🥰', 'label': 'Loved'},
   ];
+  String feelingEmoji(String feeling) {
+    switch (feeling) {
+      case 'Happy':
+        return '😊';
+      case 'Sad':
+        return '😢';
+      case 'Calm':
+        return '😌';
+      case 'Angry':
+        return '😠';
+      case 'Excited':
+        return '🥳';
+      case 'Anxious':
+        return '😰';
+      case 'Grateful':
+        return '💪';
+      case 'Productive':
+        return '🙏';
+      case 'Tired':
+        return '😴';
+      case 'Loved':
+        return '🥰';
+      default:
+        return '📝';
+    }
+  }

@@ -4,9 +4,10 @@ import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/calender/presentation/widgets/day_group.dart';
 import 'package:memo/features/calender/presentation/widgets/empty_month.dart';
 import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class MonthSummarySliver extends StatelessWidget {
-  final Map<DateTime, List<Memory>> grouped;
+  final Map<DateTime, List<MemoryModel>> grouped;
   final DateTime focusedDay;
   final bool isDark;
 
