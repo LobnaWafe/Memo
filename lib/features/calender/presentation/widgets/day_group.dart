@@ -3,10 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/calender/presentation/widgets/memory_card.dart';
 import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class DayGroup extends StatelessWidget {
   final DateTime date;
-  final List<Memory> memories;
+  final List<MemoryModel> memories;
   final bool isDark;
 
   const DayGroup({

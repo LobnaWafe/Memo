@@ -4,10 +4,11 @@ import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/calender/presentation/widgets/empty_day.dart';
 import 'package:memo/features/calender/presentation/widgets/memory_card.dart';
 import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class SelectedDaySliver extends StatelessWidget {
   final DateTime selectedDay;
-  final List<Memory> memories;
+  final List<MemoryModel> memories;
   final bool isDark;
 
   const SelectedDaySliver({
