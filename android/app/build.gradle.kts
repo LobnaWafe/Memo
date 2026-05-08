@@ -6,8 +6,9 @@ plugins {
 }
 
 android {
-    namespace = "com.example.memory_app"
+    namespace = "com.example.memo"
     compileSdk = flutter.compileSdkVersion
+
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -21,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.memory_app"
+        applicationId = "com.example.memo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

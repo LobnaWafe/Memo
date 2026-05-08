@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:hive/hive.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:memo/shared/data/memory_model.dart';
 
 import 'memory_repo.dart';

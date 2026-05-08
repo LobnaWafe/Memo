@@ -8,7 +8,6 @@ class DayCell extends StatelessWidget {
   final bool hasData;
   final bool isFuture;
   final bool isWeekend;
-  final bool isDark;
 
   const DayCell({
     super.key,
@@ -18,7 +17,6 @@ class DayCell extends StatelessWidget {
     required this.hasData,
     required this.isFuture,
     required this.isWeekend,
-    required this.isDark,
   });
 
   @override
@@ -32,17 +30,14 @@ class DayCell extends StatelessWidget {
       textColor = Colors.white;
       fontWeight = FontWeight.w800;
     } else if (isToday) {
-      bgColor = isDark
-          ? AppColors.amber.withOpacity(0.2)
-          : AppColors.amberLight;
       textColor = AppColors.amber;
       fontWeight = FontWeight.w700;
-    } else if (isFuture) {
-      textColor = isDark ? AppColors.darkMist.withOpacity(0.35) : AppColors.fog;
     } else if (isWeekend) {
       textColor = AppColors.roseAccent;
+    } else if (isFuture) {
+      textColor = AppColors.mist;
     } else {
-      textColor = isDark ? AppColors.darkText : AppColors.ink;
+      textColor = AppColors.ink;
     }
 
     return Center(

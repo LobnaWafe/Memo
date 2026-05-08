@@ -83,7 +83,7 @@ class _AddMemoryViewBodyState
         ),
       );
 
-      context.go(AppRouter.kHomeView);
+    context.pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

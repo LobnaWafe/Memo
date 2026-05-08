@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:memo/core/app_colors.dart';
 
 class EmptyDay extends StatelessWidget {
-  final bool isDark;
-
-  const EmptyDay({super.key, required this.isDark});
+  const EmptyDay({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +16,7 @@ class EmptyDay extends StatelessWidget {
               width: 68,
               height: 68,
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : AppColors.softBeige,
+                color: AppColors.accentPurple.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Center(
@@ -31,7 +27,7 @@ class EmptyDay extends StatelessWidget {
             Text(
               'No memories on this day',
               style: TextStyle(
-                color: isDark ? AppColors.darkText : AppColors.ink,
+                color: AppColors.accentPurple,
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
                 letterSpacing: -0.2,
@@ -40,10 +36,7 @@ class EmptyDay extends StatelessWidget {
             const SizedBox(height: 5),
             Text(
               'Tap + to capture this moment',
-              style: TextStyle(
-                color: isDark ? AppColors.darkMist : AppColors.mist,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: AppColors.accentPurple, fontSize: 13),
             ),
             const SizedBox(height: 18),
             GestureDetector(

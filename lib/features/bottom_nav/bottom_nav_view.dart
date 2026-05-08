@@ -4,6 +4,7 @@ import 'package:memo/features/add_memory/presentation/views/add_memory_view.dart
 import 'package:memo/features/calender/presentation/views/calender_view.dart';
 import 'package:memo/features/gallery/presentation/views/gallery_view.dart';
 import 'package:memo/features/home/presentation/views/home_view.dart';
+import 'package:memo/features/home/presentation/widgets/home_view_body.dart';
 import 'package:memo/features/insights/presentation/views/insights_view.dart';
 
 class BottomNavView extends StatefulWidget {
@@ -17,7 +18,7 @@ class _BottomNavViewState extends State<BottomNavView> {
   int currentIndex = 0;
 
   final List<Widget> widgets = [
-    HomeView(),
+    HomeScreen(),
     CalenderView(),
     AddMemoryView(),
     GalleryScreen(),

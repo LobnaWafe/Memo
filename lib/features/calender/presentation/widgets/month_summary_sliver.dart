@@ -3,18 +3,16 @@ import 'package:intl/intl.dart';
 import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/calender/presentation/widgets/day_group.dart';
 import 'package:memo/features/calender/presentation/widgets/empty_month.dart';
-import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class MonthSummarySliver extends StatelessWidget {
-  final Map<DateTime, List<Memory>> grouped;
+  final Map<DateTime, List<MemoryModel>> grouped;
   final DateTime focusedDay;
-  final bool isDark;
 
   const MonthSummarySliver({
     super.key,
     required this.grouped,
     required this.focusedDay,
-    required this.isDark,
   });
 
   @override
@@ -36,7 +34,6 @@ class MonthSummarySliver extends StatelessWidget {
 
     return SliverMainAxisGroup(
       slivers: [
-        // ── Header ──
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
@@ -45,9 +42,7 @@ class MonthSummarySliver extends StatelessWidget {
                 Text(
                   DateFormat('MMMM yyyy').format(focusedDay),
                   style: TextStyle(
-                    color: isDark
-                        ? AppColors.softPurple
-                        : AppColors.accentPurple,
+                    color: AppColors.accentPurple,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.4,
@@ -61,9 +56,7 @@ class MonthSummarySliver extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.amber.withOpacity(0.12)
-                          : AppColors.amberGlow,
+                      color: AppColors.amberGlow,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: AppColors.amber.withOpacity(0.25),
@@ -73,7 +66,7 @@ class MonthSummarySliver extends StatelessWidget {
                     child: Text(
                       '$totalMemories memor${totalMemories == 1 ? 'y' : 'ies'}',
                       style: TextStyle(
-                        color: isDark ? AppColors.amber : AppColors.inkLight,
+                        color: AppColors.inkLight,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -84,9 +77,8 @@ class MonthSummarySliver extends StatelessWidget {
           ),
         ),
 
-        // ── Empty or List ──
         if (monthEntries.isEmpty)
-          SliverToBoxAdapter(child: EmptyMonth(isDark: isDark))
+          SliverToBoxAdapter(child: EmptyMonth())
         else
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -95,7 +87,6 @@ class MonthSummarySliver extends StatelessWidget {
               itemBuilder: (context, i) => DayGroup(
                 date: monthEntries[i].key,
                 memories: monthEntries[i].value,
-                isDark: isDark,
               ),
             ),
           ),
