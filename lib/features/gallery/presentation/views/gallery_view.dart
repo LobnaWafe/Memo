@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:memory_journal/features/gallery/gallery_view_body.dart';
+import 'package:memo/features/gallery/presentation/widgets/gallery_view_body.dart';
+
 
 class GalleryScreen extends StatelessWidget {
   GalleryScreen({super.key});
