@@ -39,12 +39,10 @@ class _HomeView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: BlocBuilder<HomeCubit, HomeState>(
               builder: (context, state) {
-                // ── Loading ──
                 if (state is HomeInitial || state is HomeLoading) {
                   return const SliverToBoxAdapter(child: MemoryCardShimmer());
                 }
 
-                // ── Error ──
                 if (state is HomeError) {
                   return SliverToBoxAdapter(
                     child: Center(
@@ -56,11 +54,9 @@ class _HomeView extends StatelessWidget {
                   );
                 }
 
-                // ── Success ──
                 if (state is HomeSuccess) {
                   final memories = state.memories;
 
-                  // Empty
                   if (memories.isEmpty) {
                     return SliverToBoxAdapter(
                       child: EmptyState(
@@ -74,20 +70,16 @@ class _HomeView extends StatelessWidget {
                     );
                   }
 
-                  // Group by month
                   final grouped = <String, List<MemoryModel>>{};
                   for (final m in memories) {
                     final key = DateFormat('MMMM yyyy').format(m.time);
                     grouped.putIfAbsent(key, () => []).add(m);
                   }
 
-                  final entries = grouped.entries.toList();
-
                   return SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final entries = grouped.entries.toList();
                       if (index >= entries.length) return null;
-
                       final entry = entries[index];
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +95,15 @@ class _HomeView extends StatelessWidget {
                                   ),
                             ),
                           ),
-                          ...entry.value.map((m) => MemoryCard(memory: m)),
+                          ...entry.value.map(
+                            (m) => GestureDetector(
+                              onTap: () => context.push(
+                                AppRouter.kMemoryDetail,
+                                extra: m,
+                              ),
+                              child: MemoryCard(memory: m),
+                            ),
+                          ),
                         ],
                       );
                     }, childCount: grouped.length),
@@ -124,16 +124,15 @@ class _HomeView extends StatelessWidget {
 // ─────────────────────────────────────────────────────
 // App Bar
 // ─────────────────────────────────────────────────────
-
 class _HomeAppBar extends StatelessWidget {
   final bool isDark;
-
   const _HomeAppBar({required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final greeting = _getGreeting();
+
     return SliverAppBar(
       expandedHeight: 140,
       floating: true,
@@ -142,43 +141,47 @@ class _HomeAppBar extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.transparent,
       elevation: 0,
-      //forceMaterialTransparency: true,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          padding: const EdgeInsets.fromLTRB(20, 56, 20, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                greeting,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+        background: SafeArea(
+          // ✅ SafeArea + bottom: false يضمن إن الـ Column مش تتجاوز المساحة المتاحة
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment
+                  .center, // ✅ توسيط عمودي بدل إنه يبدأ من فوق ويتجاوز
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  greeting,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 4),
-              Text(
-                'Your Journal',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.textPrimary,
+                const SizedBox(height: 2),
+                Text(
+                  'Your Journal',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              Text(
-                DateFormat('EEEE, MMMM d').format(now),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textHint),
-              ),
-            ],
+                Text(
+                  DateFormat('EEEE, MMMM d').format(now),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textHint),
+                ),
+              ],
+            ),
           ),
         ),
       ),
       actions: [
-        // ── Dark / Light toggle ──
         Builder(
-          builder: (context) => IconButton(
+          builder: (ctx) => IconButton(
             icon: Icon(
               isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
               color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
@@ -186,25 +189,20 @@ class _HomeAppBar extends StatelessWidget {
             onPressed: () {},
           ),
         ),
-
-        // ── Search ──
         IconButton(
           icon: Icon(
             Icons.search_rounded,
             color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
-          onPressed: () => context.push('/search'),
+          onPressed: () => context.push(AppRouter.kSearchView),
         ),
-
-        // ── Favorites ──
         IconButton(
           icon: Icon(
             Icons.favorite_border_rounded,
             color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
-          onPressed: () => context.push(AppRouter.kFavoriteView), // ← go_router
+          onPressed: () => context.push(AppRouter.kFavoriteView),
         ),
-
         const SizedBox(width: 4),
       ],
     );
@@ -221,7 +219,6 @@ class _HomeAppBar extends StatelessWidget {
 // ─────────────────────────────────────────────────────
 // On This Day Banner
 // ─────────────────────────────────────────────────────
-
 class _OnThisDayBanner extends StatelessWidget {
   const _OnThisDayBanner();
 
@@ -234,8 +231,6 @@ class _OnThisDayBanner extends StatelessWidget {
         }
 
         final today = DateTime.now();
-
-        // ذكريات نفس اليوم والشهر بس سنة مختلفة
         final onThisDay = state.memories.where((m) {
           return m.time.day == today.day &&
               m.time.month == today.month &&
@@ -245,6 +240,7 @@ class _OnThisDayBanner extends StatelessWidget {
         if (onThisDay.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox());
         }
+
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
@@ -275,7 +271,7 @@ class _OnThisDayBanner extends StatelessWidget {
                               ),
                         ),
                         Text(
-                          '${state.memories.length} memor${state.memories.length == 1 ? 'y' : 'ies'} from the past',
+                          '${onThisDay.length} memor${onThisDay.length == 1 ? 'y' : 'ies'} from the past',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(color: AppColors.textSecondary),
                         ),

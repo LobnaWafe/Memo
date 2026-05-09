@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:memo/core/app_colors.dart';
+import 'package:memo/core/utlis/app_router.dart';
 import 'package:memo/shared/data/memory_model.dart';
 
 class MemoryCard extends StatelessWidget {
   final MemoryModel memory;
-  final bool isDark;
 
-  const MemoryCard({super.key, required this.memory, required this.isDark});
+  const MemoryCard({super.key, required this.memory});
 
   Color _accentColor() {
     switch (memory.feelingName.toLowerCase()) {
@@ -31,7 +32,7 @@ class MemoryCard extends StatelessWidget {
   }
 
   String _feelingEmoji() {
-    switch (memory.feelingName.toLowerCase()) {
+    switch (memory.feelingName) {
       case 'Happy':
         return '😊';
       case 'Sad':
@@ -67,24 +68,20 @@ class MemoryCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          // ✅ كان فاضي onTap: () {} — دلوقتي بيروح لصفحة التفاصيل
+          onTap: () => context.push(AppRouter.kMemoryDetail, extra: memory),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCard : AppColors.warmWhite,
+              color: AppColors.warmWhite,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.05),
-                width: 1,
-              ),
+              border: Border.all(color: accent.withOpacity(0.3), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  color: accent.withOpacity(0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -96,9 +93,7 @@ class MemoryCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? accent.withOpacity(0.18)
-                        : accent.withOpacity(0.4),
+                    color: accent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: Center(
@@ -119,9 +114,7 @@ class MemoryCard extends StatelessWidget {
                             child: Text(
                               memory.feelingName,
                               style: TextStyle(
-                                color: isDark
-                                    ? AppColors.darkText
-                                    : AppColors.ink,
+                                color: AppColors.ink,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
                                 letterSpacing: -0.2,
@@ -142,7 +135,7 @@ class MemoryCard extends StatelessWidget {
                       Text(
                         memory.description,
                         style: TextStyle(
-                          color: isDark ? AppColors.darkMist : AppColors.mist,
+                          color: AppColors.mist,
                           fontSize: 12.5,
                           height: 1.4,
                         ),

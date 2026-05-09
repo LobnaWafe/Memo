@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:memo/constants.dart';
 import 'package:memo/core/app_colors.dart';
+import 'package:memo/core/utlis/app_router.dart';
 import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart';
 import 'package:memo/shared/data/memory_model.dart';
 
@@ -24,7 +25,9 @@ class MemoryCard extends StatelessWidget {
     final moodColor = _getMoodColor(memory.feelingName);
 
     return GestureDetector(
-      onTap: () => context.push('/memory/${memory.id}', extra: memory),
+      // ✅ كان بيروح لـ '/memory/${memory.id}' — route مش موجود
+      // دلوقتي بيروح لـ AppRouter.kMemoryDetail الصح
+      onTap: () => context.push(AppRouter.kMemoryDetail, extra: memory),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
@@ -37,8 +40,9 @@ class MemoryCard extends StatelessWidget {
               offset: const Offset(0, 6),
             ),
             BoxShadow(
-              color: (isDark ? Colors.black : AppColors.warmBeige)
-                  .withOpacity(0.1),
+              color: (isDark ? Colors.black : AppColors.warmBeige).withOpacity(
+                0.1,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -49,10 +53,7 @@ class MemoryCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Image (لو موجودة) ──
               if (memory.imagePath != null) _ImageSection(memory: memory),
-
-              // ── Content ──
               _ContentSection(
                 memory: memory,
                 showFullText: showFullText,
@@ -70,7 +71,6 @@ class MemoryCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────
 // Image Section
 // ─────────────────────────────────────────────────────
-
 class _ImageSection extends StatelessWidget {
   final MemoryModel memory;
   const _ImageSection({required this.memory});
@@ -102,7 +102,6 @@ class _ImageSection extends StatelessWidget {
 // ─────────────────────────────────────────────────────
 // Content Section
 // ─────────────────────────────────────────────────────
-
 class _ContentSection extends StatelessWidget {
   final MemoryModel memory;
   final bool showFullText;
@@ -126,7 +125,6 @@ class _ContentSection extends StatelessWidget {
           // ── Date + Mood Chip ──
           Row(
             children: [
-              // Date
               Expanded(
                 child: Row(
                   children: [
@@ -141,19 +139,19 @@ class _ContentSection extends StatelessWidget {
                     Text(
                       DateFormat('MMM d, yyyy').format(memory.time),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isDark
-                                ? AppColors.darkTextSecondary
-                                : AppColors.textHint,
-                          ),
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textHint,
+                      ),
                     ),
                   ],
                 ),
               ),
-
-              // Mood chip
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: moodColor.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
@@ -169,11 +167,11 @@ class _ContentSection extends StatelessWidget {
                     Text(
                       memory.feelingName,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isDark
-                                ? AppColors.darkTextPrimary
-                                : AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -187,11 +185,9 @@ class _ContentSection extends StatelessWidget {
           Text(
             memory.description,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.darkTextPrimary
-                      : AppColors.textPrimary,
-                  height: 1.6,
-                ),
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+              height: 1.6,
+            ),
             maxLines: showFullText ? null : 3,
             overflow: showFullText ? null : TextOverflow.ellipsis,
           ),
@@ -202,7 +198,6 @@ class _ContentSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Tags
               if (memory.tags != null && memory.tags!.isNotEmpty)
                 Expanded(
                   child: Wrap(
@@ -212,7 +207,9 @@ class _ContentSection extends StatelessWidget {
                         .map(
                           (tag) => Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? AppColors.darkSurface
@@ -221,12 +218,8 @@ class _ContentSection extends StatelessWidget {
                             ),
                             child: Text(
                               '#$tag',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: AppColors.accentPurple,
-                                  ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(color: AppColors.accentPurple),
                             ),
                           ),
                         )
@@ -236,13 +229,10 @@ class _ContentSection extends StatelessWidget {
               else
                 const Spacer(),
 
-              // Favorite button
+              // ✅ GestureDetector للـ favorite منفصل — مش بيعمل navigate
               GestureDetector(
                 onTap: () {
-                  context.read<HomeCubit>().toggleFav(
-                        memory.id,
-                        memory.isFav,
-                      );
+                  context.read<HomeCubit>().toggleFav(memory.id, memory.isFav);
                 },
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
@@ -269,25 +259,24 @@ class _ContentSection extends StatelessWidget {
 // ─────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────
-
 Color _getMoodColor(String feeling) {
   switch (feeling.toLowerCase()) {
     case 'happy':
     case 'excited':
-      return const Color(0xFFFFC107); // sunflower
+      return const Color(0xFFFFC107);
     case 'calm':
     case 'peaceful':
-      return const Color(0xFF8BC34A); // sage
+      return const Color(0xFF8BC34A);
     case 'sad':
     case 'lonely':
-      return const Color(0xFF64B5F6); // sky
+      return const Color(0xFF64B5F6);
     case 'anxious':
     case 'stressed':
-      return const Color(0xFFE57373); // dusty rose
+      return const Color(0xFFE57373);
     case 'grateful':
     case 'love':
-      return const Color(0xFFFFAB91); // peach
+      return const Color(0xFFFFAB91);
     default:
-      return const Color(0xFFB0BEC5); // fog
+      return const Color(0xFFB0BEC5);
   }
 }

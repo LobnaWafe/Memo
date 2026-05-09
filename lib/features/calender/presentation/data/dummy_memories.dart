@@ -1,57 +1,56 @@
-import 'package:memo/models/memory.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
-Map<DateTime, List<Memory>> buildGrouped() {
+Map<DateTime, List<MemoryModel>> buildGrouped() {
   final allMemories = [
-    Memory(
+    MemoryModel(
       id: '1',
-      title: 'Morning walk in the park',
-      content: 'The air was fresh and birds were singing beautifully...',
-      date: DateTime(2025, 5, 7),
-      emoji: '🌿',
-      isFavorite: true,
+      feelingName: 'Morning walk in the park',
+      description: 'The air was fresh and birds were singing beautifully...',
+      time: DateTime(2025, 5, 7),
+      isFav: true,
     ),
-    Memory(
+    MemoryModel(
       id: '2',
-      title: 'Coffee with an old friend',
-      content: 'We talked for hours about old times and laughed a lot...',
-      date: DateTime(2025, 5, 5),
-      emoji: '☕',
+      feelingName: 'Coffee with an old friend',
+      description: 'We talked for hours about old times and laughed a lot...',
+      time: DateTime(2025, 5, 5),
+      isFav: false,
     ),
-    Memory(
+    MemoryModel(
       id: '3',
-      title: 'Sunset at the rooftop',
-      content: 'Golden hour never looked so perfect from up there...',
-      date: DateTime(2025, 5, 5),
-      emoji: '🌅',
-      isFavorite: true,
+      feelingName: 'Sunset at the rooftop',
+      description: 'Golden hour never looked so perfect from up there...',
+      time: DateTime(2025, 5, 5),
+      isFav: true,
     ),
-    Memory(
+    MemoryModel(
       id: '4',
-      title: 'Finished my book',
-      content: 'What an ending! Totally unexpected twist at the last page...',
-      date: DateTime(2025, 5, 2),
-      emoji: '📚',
-      isFavorite: true,
+      feelingName: 'Finished my book',
+      description:
+          'What an ending! Totally unexpected twist at the last page...',
+      time: DateTime(2025, 5, 2),
+      isFav: true,
     ),
-    Memory(
+    MemoryModel(
       id: '5',
-      title: 'Rainy afternoon',
-      content: 'Stayed home, watched movies all day long with hot cocoa...',
-      date: DateTime(2025, 4, 20),
-      emoji: '🌧️',
+      feelingName: 'Rainy afternoon',
+      description: 'Stayed home, watched movies all day long with hot cocoa...',
+      time: DateTime(2025, 4, 20),
+      isFav: false,
     ),
-    Memory(
+    MemoryModel(
       id: '6',
-      title: 'Family dinner',
-      content: 'Mom cooked her famous recipe. The whole family was there...',
-      date: DateTime(2025, 4, 15),
-      emoji: '🍽️',
+      feelingName: 'Family dinner',
+      description:
+          'Mom cooked her famous recipe. The whole family was there...',
+      time: DateTime(2025, 4, 15),
+      isFav: false,
     ),
   ];
 
-  final map = <DateTime, List<Memory>>{};
+  final map = <DateTime, List<MemoryModel>>{};
   for (final m in allMemories) {
-    final key = DateTime(m.date.year, m.date.month, m.date.day);
+    final key = DateTime(m.time.year, m.time.month, m.time.day);
     map.putIfAbsent(key, () => []).add(m);
   }
   return map;
