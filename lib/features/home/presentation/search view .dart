@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:memo/core/app_colors.dart';
 import 'package:memo/core/utlis/app_router.dart';
-import 'package:memo/features/home/presentation/cubit/search_cubit.dart';
-import 'package:memo/features/home/presentation/cubit/search_state.dart';
+import 'package:memo/features/home/presentation/search/search_cubit.dart';
+import 'package:memo/features/home/presentation/search/search_state.dart';
 import 'package:memo/shared/data/memory_model.dart';
 
 class SearchView extends StatelessWidget {
