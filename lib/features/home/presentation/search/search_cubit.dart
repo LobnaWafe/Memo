@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:memo/features/home/presentation/cubit/search_state.dart';
+import 'package:memo/features/home/presentation/search/search_state.dart';
 import 'package:memo/shared/data/memory_model.dart';
 import 'package:memo/shared/repo/memory_repo_imp.dart';
 

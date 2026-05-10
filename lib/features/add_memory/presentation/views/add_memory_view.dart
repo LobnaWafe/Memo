@@ -13,6 +13,8 @@ class AddMemoryView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.creamWhite,
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         backgroundColor: AppColors.creamWhite,
         title: const Text('New Memory'),
       ),

@@ -180,15 +180,16 @@ class _HomeAppBar extends StatelessWidget {
         ),
       ),
       actions: [
-        Builder(
-          builder: (ctx) => IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-            ),
-            onPressed: () {},
-          ),
-        ),
+        // Builder(
+        //   builder: (ctx) => 
+        //   IconButton(
+        //     icon: Icon(
+        //       isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+        //       color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+        //     ),
+        //     onPressed: () {},
+        //   ),
+        // ),
         IconButton(
           icon: Icon(
             Icons.search_rounded,

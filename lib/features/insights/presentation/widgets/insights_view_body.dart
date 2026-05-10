@@ -1,114 +1,122 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:memo/features/insights/presentation/view_model/cubit/insights_cubit.dart';
+import 'package:memo/features/insights/presentation/widgets/on_this_day_card.dart';
+import 'package:memo/shared/data/memory_model.dart';
 
 class InsightsViewBody extends StatefulWidget {
   const InsightsViewBody({super.key});
 
   @override
-  State<InsightsViewBody> createState() => _InsightsScreenState();
+  State<InsightsViewBody> createState() => _InsightsViewBodyState();
 }
 
-class _InsightsScreenState extends State<InsightsViewBody> {
-  // ✅ بيانات تجريبية
-  final List<Map<String, dynamic>> memories = [
-    {
-      "date": DateTime.now(),
-      "isFavorite": true,
-      "hasImage": true,
-      "mood": "Happy",
-      "text": "Great day!",
-    },
-    {
-      "date": DateTime.now().subtract(const Duration(days: 1)),
-      "isFavorite": false,
-      "hasImage": false,
-      "mood": "Sad",
-      "text": "Stressful",
-    },
-    {
-      "date": DateTime.now().subtract(const Duration(days: 2)),
-      "isFavorite": true,
-      "hasImage": true,
-      "mood": "Calm",
-      "text": "Relaxing",
-    },
-    {
-      "date": DateTime.now().subtract(const Duration(days: 2)),
-      "isFavorite": true,
-      "hasImage": true,
-      "mood": "Calm",
-      "text": "Relaxing",
-    },
-  ];
+class _InsightsViewBodyState extends State<InsightsViewBody> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<InsightsCubit>().getMemories();
+  }
 
-  Map<String, int> get moodDistribution {
+  Map<String, int> getMoodDistribution(List<MemoryModel> memories) {
     final Map<String, int> dist = {};
-    for (var m in memories) {
-      String mood = m["mood"];
+
+    for (var memory in memories) {
+      final mood = memory.feelingName;
+
       dist[mood] = (dist[mood] ?? 0) + 1;
     }
+
     return dist;
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalCount = memories.length;
-    final favoritesCount = memories
-        .where((m) => m["isFavorite"] == true)
-        .length;
-    final withImagesCount = memories.where((m) => m["hasImage"] == true).length;
+    return BlocBuilder<InsightsCubit, InsightsState>(
+      builder: (context, state) {
+        if (state is InsightsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Text('Your Journey', style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 4),
-        const Text(
-          'A look into your memories',
-          style: TextStyle(color: Colors.grey),
-        ),
-        const SizedBox(height: 24),
+        if (state is InsightsFailure) {
+          return Center(child: Text(state.errMsg));
+        }
 
-        // ✅ بطاقات الإحصائيات بشكل مبسط
-        Row(
-          children: [
-            _buildExpandedStat(
-              '$totalCount',
-              'Memories',
-              '📝',
-              Colors.purple.shade50,
-            ),
-            const SizedBox(width: 10),
-            _buildExpandedStat(
-              '$favoritesCount',
-              'Favorites',
-              '❤️',
-              Colors.pink.shade50,
-            ),
-            const SizedBox(width: 10),
-            _buildExpandedStat(
-              '$withImagesCount',
-              'Photos',
-              '📸',
-              Colors.teal.shade50,
-            ),
-          ],
-        ),
+        if (state is InsightsSuccess) {
+          final memories = state.memoryModel;
 
-        const SizedBox(height: 28),
+          final totalCount = memories.length;
 
-        // ✅ توزيع الحالة المزاجية
-        _MoodDistributionCard(distribution: moodDistribution, isDark: isDark),
+          final favoritesCount = memories.where((m) => m.isFav).length;
 
-        const SizedBox(height: 20),
+          final withImagesCount = memories
+              .where((m) => m.imagePath != null)
+              .length;
 
-        const SizedBox(height: 20),
+          final moodDistribution = getMoodDistribution(memories);
 
-        _OnThisDayCard(memories: memories),
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(
+                'Your Journey',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
 
-        const SizedBox(height: 40),
-      ],
+              const SizedBox(height: 4),
+
+              const Text(
+                'A look into your memories',
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  _buildExpandedStat(
+                    '$totalCount',
+                    'Memories',
+                    '📝',
+                    Colors.purple.shade50,
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  _buildExpandedStat(
+                    '$favoritesCount',
+                    'Favorites',
+                    '❤️',
+                    Colors.pink.shade50,
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  _buildExpandedStat(
+                    '$withImagesCount',
+                    'Photos',
+                    '📸',
+                    Colors.teal.shade50,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 28),
+
+              MoodDistributionCard(distribution: moodDistribution),
+
+              const SizedBox(height: 20),
+
+              OnThisDayCard(memories: memories),
+
+              const SizedBox(height: 40),
+            ],
+          );
+        }
+
+        return const SizedBox();
+      },
     );
   }
 
@@ -119,23 +127,16 @@ class _InsightsScreenState extends State<InsightsViewBody> {
     Color bgColor,
   ) {
     return Expanded(
-      child: _StatCard(
-        value: value,
-        label: label,
-        emoji: emoji,
-        color: bgColor,
-      ),
+      child: StatCard(value: value, label: label, emoji: emoji, color: bgColor),
     );
   }
 }
 
-// --- الـ Widgets الفرعية ---
-
-class _StatCard extends StatelessWidget {
+class StatCard extends StatelessWidget {
   final String value, label, emoji;
   final Color color;
 
-  const _StatCard({
+  const StatCard({
     required this.value,
     required this.label,
     required this.emoji,
@@ -169,20 +170,16 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _MoodDistributionCard extends StatefulWidget {
+class MoodDistributionCard extends StatefulWidget {
   final Map<String, int> distribution;
-  final bool isDark;
 
-  const _MoodDistributionCard({
-    required this.distribution,
-    required this.isDark,
-  });
+  const MoodDistributionCard({required this.distribution});
 
   @override
-  State<_MoodDistributionCard> createState() => _MoodDistributionCardState();
+  State<MoodDistributionCard> createState() => _MoodDistributionCardState();
 }
 
-class _MoodDistributionCardState extends State<_MoodDistributionCard> {
+class _MoodDistributionCardState extends State<MoodDistributionCard> {
   int _touchedIndex = -1;
 
   @override
@@ -193,7 +190,7 @@ class _MoodDistributionCardState extends State<_MoodDistributionCard> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.isDark ? Colors.grey[900] : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
@@ -214,6 +211,21 @@ class _MoodDistributionCardState extends State<_MoodDistributionCard> {
                 width: 120,
                 child: PieChart(
                   PieChartData(
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) {
+                        setState(() {
+                          if (!event.isInterestedForInteractions ||
+                              response == null ||
+                              response.touchedSection == null) {
+                            _touchedIndex = -1;
+                            return;
+                          }
+
+                          _touchedIndex =
+                              response.touchedSection!.touchedSectionIndex;
+                        });
+                      },
+                    ),
                     sectionsSpace: 2,
                     centerSpaceRadius: 30,
                     sections: sortedEntries.asMap().entries.map((e) {
@@ -288,31 +300,5 @@ class _MoodDistributionCardState extends State<_MoodDistributionCard> {
       default:
         return const Color(0xFFA29BFE); // بنفسجي فاتح افتراضي
     }
-  }
-}
-
-class _OnThisDayCard extends StatelessWidget {
-  final List memories;
-  const _OnThisDayCard({required this.memories});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.shade300, Colors.purple.shade600],
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        "✨ On this day: ${memories.length} memories captured.",
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
   }
 }

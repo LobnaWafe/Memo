@@ -197,12 +197,17 @@ class _AddMemoryViewBodyState
           const SizedBox(height: 10),
 
           TextFormField(
+            
             controller: description,
             maxLines: 5,
             decoration: InputDecoration(
+              fillColor: Colors.white,
+              filled: true,
               hintText: "Write your memory here...",
               border: OutlineInputBorder(
+                borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(16),
+                
               ),
             ),
           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:memo/core/app_colors.dart';
+import 'package:memo/features/insights/presentation/view_model/cubit/insights_cubit.dart';
 import 'package:memo/features/insights/presentation/widgets/insights_view_body.dart';
 
 class InsightsView extends StatelessWidget {
@@ -8,13 +10,16 @@ class InsightsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-           backgroundColor:  AppColors.creamWhite,
+      backgroundColor: AppColors.creamWhite,
       appBar: AppBar(
         backgroundColor: AppColors.creamWhite,
         title: const Text('Insights'),
       ),
-      body: SafeArea(child: 
-      InsightsViewBody()
+      body: SafeArea(
+        child: BlocProvider(
+          create: (context) => InsightsCubit(),
+          child: InsightsViewBody(),
+        ),
       ),
     );
   }
