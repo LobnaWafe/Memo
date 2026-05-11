@@ -13,12 +13,23 @@ class InsightsView extends StatelessWidget {
       backgroundColor: AppColors.creamWhite,
       appBar: AppBar(
         backgroundColor: AppColors.creamWhite,
-        title: const Text('Insights'),
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        title: Text(
+          'Insights',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.accentPurple, // ✅ اللون هنا
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: BlocProvider(
           create: (context) => InsightsCubit(),
-          child: InsightsViewBody(),
+          child: const InsightsViewBody(),
         ),
       ),
     );
