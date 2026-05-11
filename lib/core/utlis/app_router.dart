@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:memo/features/add_memory/presentation/views/add_memory_view.dart';
 import 'package:memo/features/bottom_nav/bottom_nav_view.dart';
@@ -6,6 +7,7 @@ import 'package:memo/features/calender/presentation/views/calender_view.dart';
 import 'package:memo/features/favorite/presentation/views/favorite_view.dart';
 import 'package:memo/features/gallery/presentation/views/gallery_view.dart';
 import 'package:memo/features/home/presentation/search%20view%20.dart';
+import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart';
 import 'package:memo/features/home/presentation/views/home_view.dart';
 import 'package:memo/features/home/presentation/widgets/home_view_body.dart';
 import 'package:memo/features/insights/presentation/views/insights_view.dart';
@@ -58,9 +60,13 @@ abstract class AppRouter {
         path: AppRouter.kMemoryDetail,
         builder: (context, state) {
           final memory = state.extra as MemoryModel;
-          return MemoryDetailView(memory: memory);
+          return BlocProvider.value(
+            value: context.read<HomeCubit>(),
+            child: MemoryDetailView(memory: memory),
+          );
         },
       ),
+
       GoRoute(
         path: AppRouter.kSearchView,
         builder: (context, state) => const SearchView(),

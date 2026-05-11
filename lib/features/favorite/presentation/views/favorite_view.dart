@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/favorite/presentation/view_model/cubit/favorite_cubit.dart';
-import 'package:memo/features/favorite/presentation/widgets/favorite_card.dart';
 import 'package:memo/features/home/presentation/widgets/memory_card.dart';
 
 class FavoritesView extends StatelessWidget {
@@ -26,32 +25,49 @@ class _FavoritesBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.creamWhite,
-  appBar: AppBar(
-    backgroundColor: AppColors.creamWhite,
-        surfaceTintColor: Colors.transparent, // 👈 هنا
-        shadowColor: Colors.transparent, // 👈 هنا
+      appBar: AppBar(
+        backgroundColor: AppColors.creamWhite,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Favorites'),
+        title: Text(
+          'Favorites',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.accentPurple, // ✅ اللون هنا
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(Icons.arrow_back_rounded, color: AppColors.accentPurple),
           onPressed: () => context.pop(),
         ),
       ),
-
-
       body: BlocBuilder<FavoritesCubit, FavoritesState>(
         builder: (context, state) {
           if (state is FavoritesLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.accentPurple),
+            );
           }
 
           if (state is FavoritesError) {
-            return Center(child: Text(state.message));
+            return Center(
+              child: Text(
+                state.message,
+                style: TextStyle(color: AppColors.accentPurple),
+              ),
+            );
           }
 
           if (state is FavoritesSuccess) {
             if (state.memories.isEmpty) {
-              return const Center(child: Text("No favorites yet 💔"));
+              return const Center(
+                child: Text(
+                  "No favorites yet 💔",
+                  style: TextStyle(color: AppColors.accentPurple),
+                ),
+              );
             }
 
             return ListView.builder(
@@ -59,7 +75,6 @@ class _FavoritesBody extends StatelessWidget {
               itemCount: state.memories.length,
               itemBuilder: (context, i) {
                 final memory = state.memories[i];
-
                 return MemoryCard(memory: memory);
               },
             );

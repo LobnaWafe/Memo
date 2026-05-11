@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/insights/presentation/view_model/cubit/insights_cubit.dart';
 import 'package:memo/features/insights/presentation/widgets/on_this_day_card.dart';
 import 'package:memo/shared/data/memory_model.dart';
@@ -21,13 +22,10 @@ class _InsightsViewBodyState extends State<InsightsViewBody> {
 
   Map<String, int> getMoodDistribution(List<MemoryModel> memories) {
     final Map<String, int> dist = {};
-
     for (var memory in memories) {
       final mood = memory.feelingName;
-
       dist[mood] = (dist[mood] ?? 0) + 1;
     }
-
     return dist;
   }
 
@@ -36,24 +34,27 @@ class _InsightsViewBodyState extends State<InsightsViewBody> {
     return BlocBuilder<InsightsCubit, InsightsState>(
       builder: (context, state) {
         if (state is InsightsLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.accentPurple),
+          );
         }
 
         if (state is InsightsFailure) {
-          return Center(child: Text(state.errMsg));
+          return Center(
+            child: Text(
+              state.errMsg,
+              style: const TextStyle(color: AppColors.accentPurple),
+            ),
+          );
         }
 
         if (state is InsightsSuccess) {
           final memories = state.memoryModel;
-
           final totalCount = memories.length;
-
           final favoritesCount = memories.where((m) => m.isFav).length;
-
           final withImagesCount = memories
               .where((m) => m.imagePath != null)
               .length;
-
           final moodDistribution = getMoodDistribution(memories);
 
           return ListView(
@@ -61,18 +62,17 @@ class _InsightsViewBodyState extends State<InsightsViewBody> {
             children: [
               Text(
                 'Your Journey',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppColors.accentPurple,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-
               const SizedBox(height: 4),
-
               const Text(
                 'A look into your memories',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.accentPurple),
               ),
-
               const SizedBox(height: 24),
-
               Row(
                 children: [
                   _buildExpandedStat(
@@ -81,18 +81,14 @@ class _InsightsViewBodyState extends State<InsightsViewBody> {
                     '📝',
                     Colors.purple.shade50,
                   ),
-
                   const SizedBox(width: 10),
-
                   _buildExpandedStat(
                     '$favoritesCount',
                     'Favorites',
                     '❤️',
                     Colors.pink.shade50,
                   ),
-
                   const SizedBox(width: 10),
-
                   _buildExpandedStat(
                     '$withImagesCount',
                     'Photos',
@@ -101,15 +97,10 @@ class _InsightsViewBodyState extends State<InsightsViewBody> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 28),
-
-              MoodDistributionCard(distribution: moodDistribution),
-
+              _MoodDistributionCard(distribution: moodDistribution),
               const SizedBox(height: 20),
-
               OnThisDayCard(memories: memories),
-
               const SizedBox(height: 40),
             ],
           );
@@ -157,11 +148,18 @@ class StatCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentPurple, // ✅ اللون هنا
+            ),
           ),
           Text(
             label,
-            style: const TextStyle(fontSize: 11),
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.accentPurple, // ✅ اللون هنا
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -170,16 +168,16 @@ class StatCard extends StatelessWidget {
   }
 }
 
-class MoodDistributionCard extends StatefulWidget {
+class _MoodDistributionCard extends StatefulWidget {
   final Map<String, int> distribution;
 
-  const MoodDistributionCard({required this.distribution});
+  const _MoodDistributionCard({required this.distribution});
 
   @override
-  State<MoodDistributionCard> createState() => _MoodDistributionCardState();
+  State<_MoodDistributionCard> createState() => _MoodDistributionCardState();
 }
 
-class _MoodDistributionCardState extends State<MoodDistributionCard> {
+class _MoodDistributionCardState extends State<_MoodDistributionCard> {
   int _touchedIndex = -1;
 
   @override
