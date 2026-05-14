@@ -9,23 +9,21 @@ import 'package:memo/features/add_memory/presentation/view_model/add_memory_cubi
 import 'package:memo/features/add_memory/presentation/widgets/date_selector.dart';
 import 'package:memo/features/add_memory/presentation/widgets/image_section.dart';
 import 'package:memo/features/add_memory/presentation/widgets/tags_section.dart';
+import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart'; // ✅ مهم
 import 'package:path_provider/path_provider.dart';
 
 class AddMemoryViewBody extends StatefulWidget {
   const AddMemoryViewBody({super.key});
 
   @override
-  State<AddMemoryViewBody> createState() =>
-      _AddMemoryViewBodyState();
+  State<AddMemoryViewBody> createState() => _AddMemoryViewBodyState();
 }
 
-class _AddMemoryViewBodyState
-    extends State<AddMemoryViewBody> {
+class _AddMemoryViewBodyState extends State<AddMemoryViewBody> {
   DateTime selectedDate = DateTime.now();
   String selectedMood = "Happy";
 
-  final TextEditingController description =
-      TextEditingController();
+  final TextEditingController description = TextEditingController();
 
   String? imagePath;
   bool isLoading = false;
@@ -35,7 +33,6 @@ class _AddMemoryViewBodyState
       imagePath = path;
     });
   }
-
 
   Future<void> saveMemory() async {
     if (description.text.trim().isEmpty) {
@@ -54,25 +51,21 @@ class _AddMemoryViewBodyState
       String? savedImage;
 
       if (imagePath != null) {
-        final dir =
-            await getApplicationDocumentsDirectory();
-
-        final fileName =
-            "${DateTime.now().millisecondsSinceEpoch}.jpg";
-
-        final file = await File(imagePath!).copy(
-          "${dir.path}/$fileName",
-        );
-
+        final dir = await getApplicationDocumentsDirectory();
+        final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
+        final file = await File(imagePath!).copy("${dir.path}/$fileName");
         savedImage = file.path;
       }
 
       await context.read<AddMemoryCubit>().addMemory(
-            feelingName: selectedMood,
-            description: description.text.trim(),
-            time: selectedDate,
-            imagePath: savedImage,
-          );
+        feelingName: selectedMood,
+        description: description.text.trim(),
+        time: selectedDate,
+        imagePath: savedImage,
+      );
+
+      // ✅ بعد الحفظ، نعمل Refresh للـ HomeCubit
+      context.read<HomeCubit>().getMemories();
 
       if (!mounted) return;
 
@@ -83,13 +76,10 @@ class _AddMemoryViewBodyState
         ),
       );
 
-    context.pop();
+      context.pop();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: $e"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
       );
     }
 
@@ -105,7 +95,6 @@ class _AddMemoryViewBodyState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           DateSelector(
             date: selectedDate,
             onTap: () async {
@@ -138,8 +127,7 @@ class _AddMemoryViewBodyState
               itemCount: moods.length,
               itemBuilder: (context, i) {
                 final mood = moods[i];
-                final isSelected =
-                    mood['label'] == selectedMood;
+                final isSelected = mood['label'] == selectedMood;
 
                 return GestureDetector(
                   onTap: () {
@@ -154,29 +142,24 @@ class _AddMemoryViewBodyState
                       color: isSelected
                           ? accentPurple.withOpacity(0.15)
                           : Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? accentPurple
-                            : Colors.grey.shade300,
+                        color: isSelected ? accentPurple : Colors.grey.shade300,
                       ),
                     ),
                     child: Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(mood['emoji']!,
-                            style: const TextStyle(
-                                fontSize: 26)),
+                        Text(
+                          mood['emoji']!,
+                          style: const TextStyle(fontSize: 26),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           mood['label']!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: isSelected
-                                ? accentPurple
-                                : Colors.grey,
+                            color: isSelected ? accentPurple : Colors.grey,
                           ),
                         ),
                       ],
@@ -197,7 +180,6 @@ class _AddMemoryViewBodyState
           const SizedBox(height: 10),
 
           TextFormField(
-            
             controller: description,
             maxLines: 5,
             decoration: InputDecoration(
@@ -207,7 +189,6 @@ class _AddMemoryViewBodyState
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(16),
-                
               ),
             ),
           ),
@@ -221,16 +202,11 @@ class _AddMemoryViewBodyState
 
           const SizedBox(height: 10),
 
-          ImageSection(
-            onImagePicked: onImagePicked,
-          ),
+          ImageSection(onImagePicked: onImagePicked),
 
           const SizedBox(height: 20),
 
-          const Text(
-            "Tags",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          const Text("Tags", style: TextStyle(fontWeight: FontWeight.bold)),
 
           const SizedBox(height: 10),
 
@@ -243,13 +219,9 @@ class _AddMemoryViewBodyState
             height: 55,
             child: ElevatedButton(
               onPressed: isLoading ? null : saveMemory,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentPurple,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: accentPurple),
               child: isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : const Text("Save Memory"),
             ),
           ),
