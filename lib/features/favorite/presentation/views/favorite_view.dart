@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:memo/core/app_colors.dart';
 import 'package:memo/features/favorite/presentation/view_model/cubit/favorite_cubit.dart';
+import 'package:memo/features/favorite/presentation/view_model/cubit/favorite_state.dart';
+import 'package:memo/features/favorite/presentation/widgets/favorite_card.dart';
 import 'package:memo/features/home/presentation/widgets/memory_card.dart';
 
 class FavoritesView extends StatelessWidget {
@@ -75,7 +77,7 @@ class _FavoritesBody extends StatelessWidget {
               itemCount: state.memories.length,
               itemBuilder: (context, i) {
                 final memory = state.memories[i];
-                return MemoryCard(memory: memory);
+                return FavCard(memory: memory);
               },
             );
           }

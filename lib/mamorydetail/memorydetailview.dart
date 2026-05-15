@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:memo/core/app_colors.dart';
+import 'package:memo/core/utlis/app_router.dart';
 import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart';
 import 'package:memo/shared/data/memory_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -130,7 +132,8 @@ class _DetailAppBar extends StatelessWidget {
             onPressed: () {
               Navigator.of(ctx).pop();
               homeCubit.deleteMemory(memory.id);
-              Navigator.of(context).pop();
+              //Navigator.of(context).pop();
+              GoRouter.of(context).go(AppRouter.kBottomNavView);
             },
             child: const Text(
               'Delete',

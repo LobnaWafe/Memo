@@ -8,8 +8,10 @@ class GalleryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.creamWhite,
       // AppBar فوق
       appBar: AppBar(
+
         title: Text(
           'Gallery',
           style: TextStyle(
@@ -19,7 +21,7 @@ class GalleryScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white, // ممكن تخليها حسب الديزاين
+        backgroundColor: AppColors.creamWhite, 
         elevation: 0,
       ),
 
