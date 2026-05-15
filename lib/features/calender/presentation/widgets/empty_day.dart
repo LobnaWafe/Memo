@@ -34,32 +34,32 @@ class EmptyDay extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Text(
-              'Tap + to capture this moment',
-              style: TextStyle(color: AppColors.accentPurple, fontSize: 13),
-            ),
-            const SizedBox(height: 18),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.accentPurple,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Add Memory',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
+            // Text(
+            //   'Tap + to capture this moment',
+            //   style: TextStyle(color: AppColors.accentPurple, fontSize: 13),
+            // ),
+            // const SizedBox(height: 18),
+            // GestureDetector(
+            //   onTap: () {},
+            //   child: Container(
+            //     padding: const EdgeInsets.symmetric(
+            //       horizontal: 22,
+            //       vertical: 10,
+            //     ),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.accentPurple,
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //     child: const Text(
+            //       'Add Memory',
+            //       style: TextStyle(
+            //         color: Colors.white,
+            //         fontWeight: FontWeight.w700,
+            //         fontSize: 13,
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

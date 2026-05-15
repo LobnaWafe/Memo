@@ -9,6 +9,7 @@ import 'package:memo/features/add_memory/presentation/view_model/add_memory_cubi
 import 'package:memo/features/add_memory/presentation/widgets/date_selector.dart';
 import 'package:memo/features/add_memory/presentation/widgets/image_section.dart';
 import 'package:memo/features/add_memory/presentation/widgets/tags_section.dart';
+import 'package:memo/features/bottom_nav/bottom_nav_view.dart';
 import 'package:memo/features/home/presentation/view_model/cubit/home_cubit.dart'; // ✅ مهم
 import 'package:path_provider/path_provider.dart';
 
@@ -76,7 +77,10 @@ class _AddMemoryViewBodyState extends State<AddMemoryViewBody> {
         ),
       );
 
-      context.pop();
+     BottomNavView.of(context)?.changeIndex(0);
+     // context.pop();
+     GoRouter.of(context).go(AppRouter.kBottomNavView);
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),

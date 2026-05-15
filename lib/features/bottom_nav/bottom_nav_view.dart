@@ -10,6 +10,10 @@ import 'package:memo/features/insights/presentation/views/insights_view.dart';
 class BottomNavView extends StatefulWidget {
   const BottomNavView({super.key});
 
+  // 💡 إضافة هذا السطر للوصول للـ State من أي مكان
+  static _BottomNavViewState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_BottomNavViewState>();
+
   @override
   State<BottomNavView> createState() => _BottomNavViewState();
 }
@@ -17,10 +21,17 @@ class BottomNavView extends StatefulWidget {
 class _BottomNavViewState extends State<BottomNavView> {
   int currentIndex = 0;
 
+ 
+  void changeIndex(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+
   final List<Widget> widgets = [
     HomeScreen(),
     CalenderView(),
-    AddMemoryView(),
+    AddMemoryView(), 
     GalleryScreen(),
     InsightsView(),
   ];
@@ -35,11 +46,7 @@ class _BottomNavViewState extends State<BottomNavView> {
       ),
       bottomNavigationBar: Bottomnav(
         currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
+        onTap: changeIndex, 
       ),
     );
   }
